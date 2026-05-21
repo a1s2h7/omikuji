@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生おみくじ</title>
+    <style>
+        :root {
+            --bg-color: #f9f9f9;
+            --main-blue: #a8d8ea;
+            --accent-orange: #ffccbc;
+            --text-color: #4a4a4a;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --border-radius: 16px;
+            --star-color: #ffcc00;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: var(--main-blue);
+            font-size: 1.8rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            background-color: #eee;
+            margin-top: 8px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-connect {
+            background-color: var(--main-blue);
+            color: white;
+        }
+
+        .btn-shake {
+            background-color: var(--accent-orange);
+            color: white;
+        }
+
+        .btn-reset {
+            background-color: #e0e0e0;
+            color: var(--text-color);
+        }
+
+        .shake-counter {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--accent-orange);
+            margin-top: 5px;
+        }
+
+        .omikuji-box-area {
+            font-size: 4rem;
+            padding: 10px;
+            transition: transform 0.5s ease;
+        }
+
+        .fortune-results-list {
+            display: none; /* 初期状態は非表示 */
+            text-align: left;
+            margin-top: 20px;
+            gap: 10px;
+            flex-direction: column;
+        }
+
+        .fortune-item {
+            background: #fffafa;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .fortune-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .fortune-name {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .stars {
+            color: var(--star-color);
+            letter-spacing: 2px;
+        }
+
+        .fortune-message {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .strong-luck-card {
+            display: none; /* 初期状態は非表示 */
+            background-color: #fff9f0;
+            border: 2px solid var(--accent-orange);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-top: 10px;
+            animation: popIn 0.5s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .strong-luck-label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--accent-orange);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .strong-luck-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .history-area {
+            text-align: left;
+        }
+
+        .history-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .history-list {
+            list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* アニメーション */
+        .shaking {
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5rem; }
+            .card { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>学生おみくじ</h1>
+            <div id="connectionStatus" class="status-badge">micro:bit未接続</div>
+        </header>
+
+        <section class="card controls">
+            <button id="connectBtn" class="btn-connect">micro:bitを接続</button>
+            <button id="shakeBtn" class="btn-shake">1回振る（テスト用）</button>
+            <button id="resetBtn" class="btn-reset">履歴をリセット</button>
+            <div id="shakeInstruction" class="shake-counter">
+                micro:bitを3回振ってね（あと3回）
+            </div>
+        </section>
+
+        <section class="card">
+            <div id="omikujiBox" class="omikuji-box-area">🗳️</div>
+            
+            <!-- 強運表示（結果が出たら表示） -->
+            <div id="strongLuckCard" class="strong-luck-card">
+                <span class="strong-luck-label">✨ 今日の強運 ✨</span>
+                <div id="strongLuckTitle" class="strong-luck-title">---</div>
+            </div>
+
+            <!-- 5つの運勢リスト -->
+            <div id="fortuneResultsList" class="fortune-results-list">
+                <!-- ここに5つの運勢が動的に追加されます -->
+            </div>
+        </section>
+
+        <section class="card history-area">
+            <span class="history-title">強運ログ（履歴）</span>
+            <ul id="historyList" class="history-list">
+                <li class="history-item"><span>履歴はまだありません</span></li>
+            </ul>
+        </section>
+    </div>
+
+    <script>
+        // DOM要素
+        const connectBtn = document.getElementById('connectBtn');
+        const shakeBtn = document.getElementById('shakeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const shakeInstruction = document.getElementById('shakeInstruction');
+        const omikujiBox = document.getElementById('omikujiBox');
+        const fortuneResultsList = document.getElementById('fortuneResultsList');
+        const strongLuckCard = document.getElementById('strongLuckCard');
+        const strongLuckTitle = document.getElementById('strongLuckTitle');
+        const historyList = document.getElementById('historyList');
+        const connectionStatus = document.getElementById('connectionStatus');
+
+        let shakeCount = 0;
+        const requiredShakes = 3;
+        const STORAGE_KEY = 'omikuji_history';
+
+        // ページ読み込み時に履歴を復元
+        window.addEventListener('DOMContentLoaded', () => {
+            renderHistory();
+        });
+
+        // 運勢のデータ
+        const fortuneCategories = [
+            { name: '課題運', messages: ['すぐに終わるよ！', '難問に挑戦してみよう', '提出忘れに注意！', '集中力が続く日', 'スラスラ解ける'] },
+            { name: '出席運', messages: ['皆勤賞ペース！', '友達と楽しく話せる', '遅刻に注意しよう', '良い席になれるかも', '先生に褒められるかも'] },
+            { name: '金運', messages: ['無駄遣いなし！', 'お小遣いゲットの予感', '計画的に使おう', '欲しかったものが買える？', '落とし物に注意'] },
+            { name: '睡眠運', messages: ['快眠！目覚めスッキリ', '二度寝が最高に気持ちいい', '面白い夢が見られそう', '早めに寝るのが吉', '夢の中で勉強しちゃう？'] },
+            { name: '昼食運', messages: ['大好物が出るよ！', '新メニューに挑戦しよう', '完食して元気いっぱい', '友達とお弁当交換？', 'デザートがあるかも'] }
+        ];
+
+        // micro:bit接続（モック）
+        connectBtn.addEventListener('click', () => {
+            connectionStatus.textContent = 'micro:bit 接続中...';
+            connectionStatus.style.backgroundColor = '#d4edda';
+            setTimeout(() => {
+                alert('micro:bitに接続しました！（シミュレーション）');
+                connectionStatus.textContent = 'micro:bit 接続済み';
+            }, 500);
+        });
+
+        // テスト用振るボタン
+        shakeBtn.addEventListener('click', () => {
+            if (shakeCount < requiredShakes) {
+                simulateShake();
+            }
+        });
+
+        // 履歴リセット
+        resetBtn.addEventListener('click', () => {
+            if (confirm('履歴をリセットしてもよろしいですか？')) {
+                localStorage.removeItem(STORAGE_KEY);
+                renderHistory();
+                resetOmikuji();
+            }
+        });
+
+        function simulateShake() {
+            shakeCount++;
+            const remaining = requiredShakes - shakeCount;
+            shakeInstruction.textContent = remaining > 0 
+                ? `micro:bitを3回振ってね（あと${remaining}回）` 
+                : 'シャッフル完了！';
+            
+            omikujiBox.classList.add('shaking');
+            setTimeout(() => {
+                omikujiBox.classList.remove('shaking');
+                if (shakeCount === requiredShakes) {
+                    showResult();
+                }
+            }, 500);
+        }
+
+        function showResult() {
+            fortuneResultsList.innerHTML = ''; // クリア
+            const results = [];
+
+            // 5つの運勢を生成
+            fortuneCategories.forEach(cat => {
+                const stars = Math.floor(Math.random() * 5) + 1; // 1〜5
+                const message = cat.messages[Math.floor(Math.random() * cat.messages.length)];
+                results.push({ name: cat.name, stars: stars, message: message });
+            });
+
+            // 星の数でソートして一番高いものを探す
+            const bestLuck = [...results].sort((a, b) => b.stars - a.stars)[0];
+
+            // UIに表示
+            results.forEach(res => {
+                const item = document.createElement('div');
+                item.className = 'fortune-item';
+                item.innerHTML = `
+                    <div class="fortune-header">
+                        <span class="fortune-name">${res.name}</span>
+                        <span class="stars">${'★'.repeat(res.stars)}${'☆'.repeat(5 - res.stars)}</span>
+                    </div>
+                    <div class="fortune-message">${res.message}</div>
+                `;
+                fortuneResultsList.appendChild(item);
+            });
+
+            // 強運の表示
+            strongLuckTitle.textContent = `${bestLuck.name} (星${bestLuck.stars})`;
+            strongLuckCard.style.display = 'block';
+            fortuneResultsList.style.display = 'flex';
+            shakeInstruction.textContent = '今日のおみくじ完了！';
+
+            addHistory(bestLuck.name, bestLuck.stars);
+        }
+
+        function addHistory(luckName, stars) {
+            const now = new Date();
+            const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+            const historyData = { time: timeStr, name: luckName, stars: stars };
+
+            // ローカルストレージに保存
+            const currentHistory = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            currentHistory.unshift(historyData);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(currentHistory));
+
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const currentHistory = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            
+            if (currentHistory.length === 0) {
+                historyList.innerHTML = '<li class="history-item"><span>履歴はまだありません</span></li>';
+                return;
+            }
+
+            historyList.innerHTML = currentHistory.map(item => `
+                <li class="history-item">
+                    <span>${item.time} - ${item.name}</span>
+                    <span>星${item.stars}つ！</span>
+                </li>
+            `).join('');
+        }
+
+        function resetOmikuji() {
+            shakeCount = 0;
+            shakeInstruction.textContent = `micro:bitを3回振ってね（あと${requiredShakes}回）`;
+            fortuneResultsList.style.display = 'none';
+            strongLuckCard.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
