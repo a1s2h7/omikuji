@@ -277,7 +277,7 @@
     <script>
         // DOM要素
         const connectBtn = document.getElementById('connectBtn');
-        const shakeBtn = document.getElementById('shakeBtn');
+        const shakeBtn = document.getElementById('shakeBtn'); // テスト用は残すがラベル変更可
         const resetBtn = document.getElementById('resetBtn');
         const shakeInstruction = document.getElementById('shakeInstruction');
         const omikujiBox = document.getElementById('omikujiBox');
@@ -290,6 +290,10 @@
         let shakeCount = 0;
         const requiredShakes = 3;
         const STORAGE_KEY = 'omikuji_history';
+        
+        // Web Serial 用の変数
+        let port;
+        let reader;
 
         // ページ読み込み時に履歴を復元
         window.addEventListener('DOMContentLoaded', () => {
@@ -305,17 +309,70 @@
             { name: '昼食運', messages: ['大好物が出るよ！', '新メニューに挑戦しよう', '完食して元気いっぱい', '友達とお弁当交換？', 'デザートがあるかも'] }
         ];
 
-        // micro:bit接続（モック）
-        connectBtn.addEventListener('click', () => {
-            connectionStatus.textContent = 'micro:bit 接続中...';
-            connectionStatus.style.backgroundColor = '#d4edda';
-            setTimeout(() => {
-                alert('micro:bitに接続しました！（シミュレーション）');
+        // Web Serial 接続処理
+        connectBtn.addEventListener('click', async () => {
+            if (!("serial" in navigator)) {
+                alert("お使いのブラウザは Web Serial API をサポートしていません。Chromeなどで試してください。");
+                return;
+            }
+
+            try {
+                // ポートの選択とオープン
+                port = await navigator.serial.requestPort();
+                await port.open({ baudRate: 115200 });
+                
                 connectionStatus.textContent = 'micro:bit 接続済み';
-            }, 500);
+                connectionStatus.style.backgroundColor = '#d4edda';
+                connectionStatus.style.color = '#155724';
+                
+                readLoop(); // データ読み取りループ開始
+            } catch (error) {
+                console.error(error);
+                connectionStatus.textContent = '接続失敗';
+                connectionStatus.style.backgroundColor = '#f8d7da';
+            }
         });
 
-        // テスト用振るボタン
+        // シリアルデータの読み取りループ
+        async function readLoop() {
+            const textDecoder = new TextDecoderStream();
+            const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+            reader = textDecoder.readable.getReader();
+
+            let buffer = '';
+            try {
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += value;
+                    
+                    // 改行区切りでJSONを解析
+                    let lines = buffer.split('\n');
+                    buffer = lines.pop(); // 最後の未完成行をバッファに戻す
+
+                    for (let line of lines) {
+                        line = line.trim();
+                        if (!line) continue;
+                        
+                        try {
+                            const data = JSON.parse(line);
+                            if (data.shake === 1) {
+                                simulateShake(); // シェイク処理を実行
+                            }
+                        } catch (e) {
+                            console.warn("JSON解析失敗:", line);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("読み取りエラー:", error);
+            } finally {
+                reader.releaseLock();
+            }
+        }
+
+        // テスト用振るボタン（残しておきますがWeb Serialがメイン）
         shakeBtn.addEventListener('click', () => {
             if (shakeCount < requiredShakes) {
                 simulateShake();
