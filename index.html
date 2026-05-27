@@ -112,6 +112,7 @@
             margin-top: 5px;
         }
 
+        /* 3Dおみくじ箱のエリア */
         .omikuji-box-area {
             perspective: 1000px;
             height: 280px;
@@ -120,9 +121,9 @@
             align-items: center;
             cursor: pointer;
             user-select: none;
+            margin: 10px 0;
         }
 
-        /* 3D六角柱のコンテナ */
         .hex-box {
             position: relative;
             width: 80px;
@@ -153,7 +154,6 @@
         .face:nth-child(5) { transform: rotateY(240deg) translateZ(68px); }
         .face:nth-child(6) { transform: rotateY(300deg) translateZ(68px); }
 
-        /* 木目模様のオーバーレイ */
         .face::before {
             content: "";
             position: absolute;
@@ -168,7 +168,6 @@
             pointer-events: none;
         }
 
-        /* 正面の文字 */
         .face.front::after {
             content: "御神籤";
             writing-mode: vertical-rl;
@@ -179,7 +178,6 @@
             text-shadow: 1px 1px 0 rgba(255,255,255,0.1);
         }
 
-        /* 蓋と底 */
         .cap {
             position: absolute;
             width: 136px;
@@ -191,22 +189,21 @@
         .cap.top { top: -20px; transform: rotateX(90deg) translateZ(20px); }
         .cap.bottom { bottom: -20px; transform: rotateX(90deg) translateZ(-180px); }
 
-        /* 3Dシェイクアニメーション */
+        /* アニメーション */
         .shaking .hex-box {
             animation: shake3d 0.5s infinite linear;
         }
 
         @keyframes shake3d {
-            0% { transform: rotateX(-10deg) rotateY(20deg) translateZ(0); }
-            20% { transform: rotateX(10deg) rotateY(10deg) translateZ(10px) rotateZ(5deg); }
-            40% { transform: rotateX(-20deg) rotateY(30deg) translateZ(-5px) rotateZ(-5deg); }
-            60% { transform: rotateX(15deg) rotateY(5deg) translateZ(15px) rotateZ(3deg); }
-            80% { transform: rotateX(-5deg) rotateY(40deg) translateZ(0) rotateZ(-3deg); }
-            100% { transform: rotateX(-10deg) rotateY(20deg) translateZ(0); }
+            0% { transform: rotateX(-10deg) rotateY(20deg); }
+            25% { transform: rotateX(10deg) rotateY(10deg) translateZ(10px) rotateZ(5deg); }
+            50% { transform: rotateX(-20deg) rotateY(30deg) translateZ(-5px) rotateZ(-5deg); }
+            75% { transform: rotateX(15deg) rotateY(5deg) translateZ(15px) rotateZ(3deg); }
+            100% { transform: rotateX(-10deg) rotateY(20deg); }
         }
 
         .fortune-results-list {
-            display: none; /* 初期状態は非表示 */
+            display: none;
             text-align: left;
             margin-top: 20px;
             gap: 10px;
@@ -243,7 +240,7 @@
         }
 
         .strong-luck-card {
-            display: none; /* 初期状態は非表示 */
+            display: none;
             background-color: #fff9f0;
             border: 2px solid var(--accent-orange);
             padding: 15px;
@@ -296,28 +293,19 @@
             justify-content: space-between;
         }
 
-        /* アニメーション */
-        .shaking {
-            animation: shake 0.5s infinite;
-        }
-
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-
         @media (max-width: 480px) {
             h1 { font-size: 1.5rem; }
             .card { padding: 15px; }
+            .hex-box { width: 60px; height: 160px; }
+            .face { width: 60px; height: 160px; }
+            .face:nth-child(1) { transform: rotateY(0deg) translateZ(51px); }
+            .face:nth-child(2) { transform: rotateY(60deg) translateZ(51px); }
+            .face:nth-child(3) { transform: rotateY(120deg) translateZ(51px); }
+            .face:nth-child(4) { transform: rotateY(180deg) translateZ(51px); }
+            .face:nth-child(5) { transform: rotateY(240deg) translateZ(51px); }
+            .face:nth-child(6) { transform: rotateY(300deg) translateZ(51px); }
+            .cap { width: 102px; height: 102px; left: -21px; }
+            .cap.bottom { transform: rotateX(90deg) translateZ(-140px); }
         }
     </style>
 </head>
@@ -352,16 +340,12 @@
                 </div>
             </div>
             
-            <!-- 強運表示（結果が出たら表示） -->
             <div id="strongLuckCard" class="strong-luck-card">
                 <span class="strong-luck-label">✨ 今日の強運 ✨</span>
                 <div id="strongLuckTitle" class="strong-luck-title">---</div>
             </div>
 
-            <!-- 5つの運勢リスト -->
-            <div id="fortuneResultsList" class="fortune-results-list">
-                <!-- ここに5つの運勢が動的に追加されます -->
-            </div>
+            <div id="fortuneResultsList" class="fortune-results-list"></div>
         </section>
 
         <section class="card history-area">
@@ -373,9 +357,8 @@
     </div>
 
     <script>
-        // DOM要素
         const connectBtn = document.getElementById('connectBtn');
-        const shakeBtn = document.getElementById('shakeBtn'); // テスト用は残すがラベル変更可
+        const shakeBtn = document.getElementById('shakeBtn');
         const resetBtn = document.getElementById('resetBtn');
         const shakeInstruction = document.getElementById('shakeInstruction');
         const omikujiBox = document.getElementById('omikujiBox');
@@ -388,17 +371,11 @@
         let shakeCount = 0;
         const requiredShakes = 3;
         const STORAGE_KEY = 'omikuji_history';
-        
-        // Web Serial 用の変数
         let port;
         let reader;
 
-        // ページ読み込み時に履歴を復元
-        window.addEventListener('DOMContentLoaded', () => {
-            renderHistory();
-        });
+        window.addEventListener('DOMContentLoaded', renderHistory);
 
-        // 運勢のデータ
         const fortuneCategories = [
             { name: '課題運', messages: ['すぐに終わるよ！', '難問に挑戦してみよう', '提出忘れに注意！', '集中力が続く日', 'スラスラ解ける'] },
             { name: '出席運', messages: ['皆勤賞ペース！', '友達と楽しく話せる', '遅刻に注意しよう', '良い席になれるかも', '先生に褒められるかも'] },
@@ -407,85 +384,56 @@
             { name: '昼食運', messages: ['大好物が出るよ！', '新メニューに挑戦しよう', '完食して元気いっぱい', '友達とお弁当交換？', 'デザートがあるかも'] }
         ];
 
-        // Web Serial 接続処理
         connectBtn.addEventListener('click', async () => {
             if (!("serial" in navigator)) {
-                alert("お使いのブラウザは Web Serial API をサポートしていません。Chromeなどで試してください。");
+                alert("お使いのブラウザは Web Serial API をサポートしていません。");
                 return;
             }
-
             try {
-                // ポートの選択とオープン
                 port = await navigator.serial.requestPort();
                 await port.open({ baudRate: 115200 });
-                
                 connectionStatus.textContent = 'micro:bit 接続済み';
                 connectionStatus.style.backgroundColor = '#d4edda';
-                connectionStatus.style.color = '#155724';
-                
-                readLoop(); // データ読み取りループ開始
+                readLoop();
             } catch (error) {
                 console.error(error);
-                connectionStatus.textContent = '接続失敗';
-                connectionStatus.style.backgroundColor = '#f8d7da';
             }
         });
 
-        // シリアルデータの読み取りループ
         async function readLoop() {
             const textDecoder = new TextDecoderStream();
             const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
             reader = textDecoder.readable.getReader();
-
             let buffer = '';
             try {
                 while (true) {
                     const { value, done } = await reader.read();
                     if (done) break;
-                    
                     buffer += value;
-                    
-                    // 改行区切りでJSONを解析
                     let lines = buffer.split('\n');
-                    buffer = lines.pop(); // 最後の未完成行をバッファに戻す
-
+                    buffer = lines.pop();
                     for (let line of lines) {
                         line = line.trim();
-                        if (!line) continue;
-                        
-                        // JSON解析が失敗しやすいので、'S'という文字が含まれていたらシェイクとみなす
-                        if (line.includes('S') || line.includes('s')) {
-                            simulateShake();
-                        }
-                        
-                        // JSONも念のため残しておく
-                        try {
-                            const data = JSON.parse(line);
-                            if (data.shake === 1) {
-                                simulateShake();
-                            }
-                        } catch (e) {
-                            // 解析失敗は無視
-                        }
+                        if (line.includes('S') || line.includes('s')) simulateShake();
                     }
                 }
             } catch (error) {
-                console.error("読み取りエラー:", error);
+                console.error(error);
             } finally {
                 reader.releaseLock();
             }
         }
 
-        // テスト用振るボタン（残しておきますがWeb Serialがメイン）
         shakeBtn.addEventListener('click', () => {
-            if (shakeCount < requiredShakes) {
-                simulateShake();
-            }
+            if (shakeCount < requiredShakes) simulateShake();
         });
 
-        // 履歴リセット
+        omikujiBox.addEventListener('click', () => {
+            if (shakeCount < requiredShakes) simulateShake();
+        });
+
         resetBtn.addEventListener('click', () => {
-            if (confirm('履歴をリセットしてもよろしいですか？')) {
+            if (confirm('履歴をリセットしますか？')) {
                 localStorage.removeItem(STORAGE_KEY);
                 renderHistory();
                 resetOmikuji();
@@ -502,27 +450,21 @@
             omikujiBox.classList.add('shaking');
             setTimeout(() => {
                 omikujiBox.classList.remove('shaking');
-                if (shakeCount === requiredShakes) {
-                    showResult();
-                }
+                if (shakeCount === requiredShakes) showResult();
             }, 500);
         }
 
         function showResult() {
-            fortuneResultsList.innerHTML = ''; // クリア
+            fortuneResultsList.innerHTML = '';
             const results = [];
-
-            // 5つの運勢を生成
             fortuneCategories.forEach(cat => {
-                const stars = Math.floor(Math.random() * 5) + 1; // 1〜5
+                const stars = Math.floor(Math.random() * 5) + 1;
                 const message = cat.messages[Math.floor(Math.random() * cat.messages.length)];
                 results.push({ name: cat.name, stars: stars, message: message });
             });
 
-            // 星の数でソートして一番高いものを探す
             const bestLuck = [...results].sort((a, b) => b.stars - a.stars)[0];
 
-            // UIに表示
             results.forEach(res => {
                 const item = document.createElement('div');
                 item.className = 'fortune-item';
@@ -536,7 +478,6 @@
                 fortuneResultsList.appendChild(item);
             });
 
-            // 強運の表示
             strongLuckTitle.textContent = `${bestLuck.name} (星${bestLuck.stars})`;
             strongLuckCard.style.display = 'block';
             fortuneResultsList.style.display = 'flex';
@@ -549,23 +490,18 @@
             const now = new Date();
             const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
             const historyData = { time: timeStr, name: luckName, stars: stars };
-
-            // ローカルストレージに保存
             const currentHistory = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             currentHistory.unshift(historyData);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(currentHistory));
-
             renderHistory();
         }
 
         function renderHistory() {
             const currentHistory = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            
             if (currentHistory.length === 0) {
                 historyList.innerHTML = '<li class="history-item"><span>履歴はまだありません</span></li>';
                 return;
             }
-
             historyList.innerHTML = currentHistory.map(item => `
                 <li class="history-item">
                     <span>${item.time} - ${item.name}</span>
