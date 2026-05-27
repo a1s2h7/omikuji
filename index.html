@@ -454,16 +454,24 @@
         function simulateShake() {
             shakeCount++;
             
-            // 1回目の振る動作で箱を逆さまにする
-            if (shakeCount === 1) {
-                omikujiWrapper.classList.add('inverted');
-            }
-
             const remaining = requiredShakes - shakeCount;
             shakeInstruction.textContent = remaining > 0 
                 ? `micro:bitを3回振ってね（あと${remaining}回）` 
                 : 'シャッフル完了！';
-            
+
+            if (shakeCount === 1) {
+                // 1回目：まず逆さまにする（アニメーションが終わるのを待ってから揺らす）
+                omikujiWrapper.classList.add('inverted');
+                setTimeout(() => {
+                    performShakeAction();
+                }, 600); // CSSのtransition時間（0.6s）に合わせる
+            } else {
+                // 2回目以降：すぐに揺らす
+                performShakeAction();
+            }
+        }
+
+        function performShakeAction() {
             omikujiBox.classList.add('shaking');
             setTimeout(() => {
                 omikujiBox.classList.remove('shaking');
