@@ -124,13 +124,23 @@
             margin: 10px 0;
         }
 
+        /* 箱の回転（上下）を制御するラッパー */
+        .hex-box-wrapper {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: rotateX(-10deg) rotateY(20deg);
+        }
+
+        /* 逆さま状態 */
+        .hex-box-wrapper.inverted {
+            transform: rotateX(170deg) rotateY(20deg);
+        }
+
         .hex-box {
             position: relative;
             width: 80px;
             height: 200px;
             transform-style: preserve-3d;
-            transform: rotateX(-10deg) rotateY(20deg);
-            transition: transform 0.3s ease;
         }
 
         .face {
@@ -195,11 +205,11 @@
         }
 
         @keyframes shake3d {
-            0% { transform: rotateX(-10deg) rotateY(20deg); }
+            0% { transform: rotateX(0deg); }
             25% { transform: rotateX(10deg) rotateY(10deg) translateZ(10px) rotateZ(5deg); }
-            50% { transform: rotateX(-20deg) rotateY(30deg) translateZ(-5px) rotateZ(-5deg); }
+            50% { transform: rotateX(-20deg) rotateY(-10deg) translateZ(-5px) rotateZ(-5deg); }
             75% { transform: rotateX(15deg) rotateY(5deg) translateZ(15px) rotateZ(3deg); }
-            100% { transform: rotateX(-10deg) rotateY(20deg); }
+            100% { transform: rotateX(0deg); }
         }
 
         .fortune-results-list {
@@ -327,14 +337,16 @@
 
         <section class="card">
             <div id="omikujiBox" class="omikuji-box-area">
-                <div class="hex-box">
-                    <div class="face front"></div>
-                    <div class="face"></div>
-                    <div class="face"></div>
-                    <div class="face"></div>
-                    <div class="face"></div>
-                    <div class="face"></div>
-                    <div class="cap top"></div>
+                <div id="omikujiWrapper" class="hex-box-wrapper">
+                    <div class="hex-box">
+                        <div class="face front"></div>
+                        <div class="face"></div>
+                        <div class="face"></div>
+                        <div class="face"></div>
+                        <div class="face"></div>
+                        <div class="face"></div>
+                        <div class="cap top"></div>
+                    </div>
                 </div>
             </div>
             
@@ -360,6 +372,7 @@
         const resetBtn = document.getElementById('resetBtn');
         const shakeInstruction = document.getElementById('shakeInstruction');
         const omikujiBox = document.getElementById('omikujiBox');
+        const omikujiWrapper = document.getElementById('omikujiWrapper');
         const fortuneResultsList = document.getElementById('fortuneResultsList');
         const strongLuckCard = document.getElementById('strongLuckCard');
         const strongLuckTitle = document.getElementById('strongLuckTitle');
@@ -440,6 +453,12 @@
 
         function simulateShake() {
             shakeCount++;
+            
+            // 1回目の振る動作で箱を逆さまにする
+            if (shakeCount === 1) {
+                omikujiWrapper.classList.add('inverted');
+            }
+
             const remaining = requiredShakes - shakeCount;
             shakeInstruction.textContent = remaining > 0 
                 ? `micro:bitを3回振ってね（あと${remaining}回）` 
@@ -448,11 +467,16 @@
             omikujiBox.classList.add('shaking');
             setTimeout(() => {
                 omikujiBox.classList.remove('shaking');
-                if (shakeCount === requiredShakes) showResult();
+                if (shakeCount === requiredShakes) {
+                    showResult();
+                }
             }, 500);
         }
 
         function showResult() {
+            // 結果が出たら元の向きに戻す
+            omikujiWrapper.classList.remove('inverted');
+
             fortuneResultsList.innerHTML = '';
             const results = [];
             fortuneCategories.forEach(cat => {
@@ -510,6 +534,7 @@
 
         function resetOmikuji() {
             shakeCount = 0;
+            omikujiWrapper.classList.remove('inverted');
             shakeInstruction.textContent = `micro:bitを3回振ってね（あと${requiredShakes}回）`;
             fortuneResultsList.style.display = 'none';
             strongLuckCard.style.display = 'none';
