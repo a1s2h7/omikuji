@@ -32,6 +32,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            overflow-x: hidden;
         }
 
         .container {
@@ -100,8 +101,13 @@
             color: white;
         }
 
+        .btn-history {
+            background-color: #90a4ae;
+            color: white;
+        }
+
         .btn-reset {
-            background-color: #e0e0e0;
+            background-color: #cfd8dc;
             color: var(--text-color);
         }
 
@@ -124,14 +130,12 @@
             margin: 10px 0;
         }
 
-        /* 箱の回転（上下）を制御するラッパー */
         .hex-box-wrapper {
             transform-style: preserve-3d;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             transform: rotateX(-10deg) rotateY(20deg) rotateZ(0deg);
         }
 
-        /* 逆さま状態（画面内で180度回転） */
         .hex-box-wrapper.inverted {
             transform: rotateX(-10deg) rotateY(20deg) rotateZ(180deg);
         }
@@ -156,7 +160,6 @@
             box-shadow: inset 0 0 15px rgba(0,0,0,0.08);
         }
 
-        /* 各面の設定（60度ずつ回転） */
         .face:nth-child(1) { transform: rotateY(0deg) translateZ(68px); }
         .face:nth-child(2) { transform: rotateY(60deg) translateZ(68px); }
         .face:nth-child(3) { transform: rotateY(120deg) translateZ(68px); }
@@ -279,28 +282,75 @@
             color: var(--text-color);
         }
 
-        .history-area {
-            text-align: left;
+        /* 履歴モーダル（オーバーレイ） */
+        .history-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .history-modal {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            border-radius: var(--border-radius);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: modalSlideUp 0.3s ease;
+        }
+
+        @keyframes modalSlideUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
         }
 
         .history-title {
+            font-size: 1.2rem;
             font-weight: bold;
-            margin-bottom: 10px;
-            display: block;
         }
 
         .history-list {
             list-style: none;
-            max-height: 200px;
             overflow-y: auto;
+            flex-grow: 1;
+            margin-bottom: 20px;
         }
 
         .history-item {
-            padding: 8px 0;
+            padding: 12px 0;
             border-bottom: 1px dashed #ddd;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             display: flex;
             justify-content: space-between;
+        }
+
+        .history-empty {
+            color: #999;
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .btn-close {
+            background: #eee;
+            color: #666;
+            width: 100%;
         }
 
         @media (max-width: 480px) {
@@ -329,7 +379,7 @@
         <section class="card controls">
             <button id="connectBtn" class="btn-connect">micro:bitを接続</button>
             <button id="shakeBtn" class="btn-shake">1回振る（テスト用）</button>
-            <button id="resetBtn" class="btn-reset">履歴をリセット</button>
+            <button id="viewHistoryBtn" class="btn-history">強運ログを見る</button>
             <div id="shakeInstruction" class="shake-counter">
                 micro:bitを3回振ってね（あと3回）
             </div>
@@ -357,19 +407,31 @@
 
             <div id="fortuneResultsList" class="fortune-results-list"></div>
         </section>
+    </div>
 
-        <section class="card history-area">
-            <span class="history-title">強運ログ（履歴）</span>
+    <!-- 履歴表示用オーバーレイ -->
+    <div id="historyOverlay" class="history-overlay">
+        <div class="history-modal">
+            <div class="history-header">
+                <span class="history-title">強運ログ（履歴）</span>
+            </div>
             <ul id="historyList" class="history-list">
-                <li class="history-item"><span>履歴はまだありません</span></li>
+                <!-- ここに履歴が入ります -->
             </ul>
-        </section>
+            <div style="display: flex; gap: 10px;">
+                <button id="resetBtn" class="btn-reset">履歴をリセット</button>
+                <button id="closeHistoryBtn" class="btn-close">とじる</button>
+            </div>
+        </div>
     </div>
 
     <script>
         const connectBtn = document.getElementById('connectBtn');
         const shakeBtn = document.getElementById('shakeBtn');
+        const viewHistoryBtn = document.getElementById('viewHistoryBtn');
+        const closeHistoryBtn = document.getElementById('closeHistoryBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const historyOverlay = document.getElementById('historyOverlay');
         const shakeInstruction = document.getElementById('shakeInstruction');
         const omikujiBox = document.getElementById('omikujiBox');
         const omikujiWrapper = document.getElementById('omikujiWrapper');
@@ -385,16 +447,32 @@
         let port;
         let reader;
 
-        window.addEventListener('DOMContentLoaded', renderHistory);
+        // ページ読み込み時に履歴を準備
+        window.addEventListener('DOMContentLoaded', () => {
+            updateHistoryUI();
+        });
 
-        const fortuneCategories = [
-            { name: '課題運', messages: ['すぐに終わるよ！', '難問に挑戦してみよう', '提出忘れに注意！', '集中力が続く日', 'スラスラ解ける'] },
-            { name: '出席運', messages: ['皆勤賞ペース！', '友達と楽しく話せる', '遅刻に注意しよう', '良い席になれるかも', '先生に褒められるかも'] },
-            { name: '金運', messages: ['無駄遣いなし！', 'お小遣いゲットの予感', '計画的に使おう', '欲しかったものが買える？', '落とし物に注意'] },
-            { name: '睡眠運', messages: ['快眠！目覚めスッキリ', '二度寝が最高に気持ちいい', '面白い夢が見られそう', '早めに寝るのが吉', '夢の中で勉強しちゃう？'] },
-            { name: '昼食運', messages: ['大好物が出るよ！', '新メニューに挑戦しよう', '完食して元気いっぱい', '友達とお弁当交換？', 'デザートがあるかも'] }
-        ];
+        // 履歴を表示する
+        viewHistoryBtn.addEventListener('click', () => {
+            updateHistoryUI();
+            historyOverlay.style.display = 'flex';
+        });
 
+        // 履歴を閉じる
+        closeHistoryBtn.addEventListener('click', () => {
+            historyOverlay.style.display = 'none';
+        });
+
+        // 履歴をリセット
+        resetBtn.addEventListener('click', () => {
+            if (confirm('履歴をリセットしますか？')) {
+                localStorage.removeItem(STORAGE_KEY);
+                updateHistoryUI();
+                resetOmikuji();
+            }
+        });
+
+        // micro:bit接続
         connectBtn.addEventListener('click', async () => {
             if (!("serial" in navigator)) {
                 alert("お使いのブラウザは Web Serial API をサポートしていません。");
@@ -443,30 +521,17 @@
             if (shakeCount < requiredShakes) simulateShake();
         });
 
-        resetBtn.addEventListener('click', () => {
-            if (confirm('履歴をリセットしますか？')) {
-                localStorage.removeItem(STORAGE_KEY);
-                renderHistory();
-                resetOmikuji();
-            }
-        });
-
         function simulateShake() {
             shakeCount++;
-            
             const remaining = requiredShakes - shakeCount;
             shakeInstruction.textContent = remaining > 0 
                 ? `micro:bitを3回振ってね（あと${remaining}回）` 
                 : 'シャッフル完了！';
 
             if (shakeCount === 1) {
-                // 1回目：まず逆さまにする（アニメーションが終わるのを待ってから揺らす）
                 omikujiWrapper.classList.add('inverted');
-                setTimeout(() => {
-                    performShakeAction();
-                }, 600); // CSSのtransition時間（0.6s）に合わせる
+                setTimeout(() => { performShakeAction(); }, 600);
             } else {
-                // 2回目以降：すぐに揺らす
                 performShakeAction();
             }
         }
@@ -475,16 +540,12 @@
             omikujiBox.classList.add('shaking');
             setTimeout(() => {
                 omikujiBox.classList.remove('shaking');
-                if (shakeCount === requiredShakes) {
-                    showResult();
-                }
+                if (shakeCount === requiredShakes) showResult();
             }, 500);
         }
 
         function showResult() {
-            // 結果が出たら元の向きに戻す
             omikujiWrapper.classList.remove('inverted');
-
             fortuneResultsList.innerHTML = '';
             const results = [];
             fortuneCategories.forEach(cat => {
@@ -518,18 +579,17 @@
 
         function addHistory(luckName, stars) {
             const now = new Date();
-            const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+            const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
             const historyData = { time: timeStr, name: luckName, stars: stars };
             const currentHistory = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             currentHistory.unshift(historyData);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(currentHistory));
-            renderHistory();
         }
 
-        function renderHistory() {
+        function updateHistoryUI() {
             const currentHistory = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             if (currentHistory.length === 0) {
-                historyList.innerHTML = '<li class="history-item"><span>履歴はまだありません</span></li>';
+                historyList.innerHTML = '<li class="history-empty">履歴がここに出ます</li>';
                 return;
             }
             historyList.innerHTML = currentHistory.map(item => `
