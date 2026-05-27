@@ -121,7 +121,7 @@
         /* 3Dおみくじ箱のエリア */
         .omikuji-box-area {
             perspective: 1000px;
-            height: 280px;
+            height: 350px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -130,27 +130,29 @@
             margin: 10px 0;
         }
 
+        /* 箱の回転（上下）を制御するラッパー */
         .hex-box-wrapper {
             transform-style: preserve-3d;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             transform: rotateX(-10deg) rotateY(20deg) rotateZ(0deg);
         }
 
+        /* 逆さま状態（画面内で180度回転） */
         .hex-box-wrapper.inverted {
             transform: rotateX(-10deg) rotateY(20deg) rotateZ(180deg);
         }
 
         .hex-box {
             position: relative;
-            width: 80px;
-            height: 200px;
+            width: 100px;
+            height: 240px;
             transform-style: preserve-3d;
         }
 
         .face {
             position: absolute;
-            width: 80px;
-            height: 200px;
+            width: 100px;
+            height: 240px;
             background: linear-gradient(to right, #fdf5e6, #f5deb3, #fdf5e6);
             border: 1px solid #d2b48c;
             display: flex;
@@ -160,12 +162,13 @@
             box-shadow: inset 0 0 15px rgba(0,0,0,0.08);
         }
 
-        .face:nth-child(1) { transform: rotateY(0deg) translateZ(68px); }
-        .face:nth-child(2) { transform: rotateY(60deg) translateZ(68px); }
-        .face:nth-child(3) { transform: rotateY(120deg) translateZ(68px); }
-        .face:nth-child(4) { transform: rotateY(180deg) translateZ(68px); }
-        .face:nth-child(5) { transform: rotateY(240deg) translateZ(68px); }
-        .face:nth-child(6) { transform: rotateY(300deg) translateZ(68px); }
+        /* 各面の設定（60度ずつ回転） */
+        .face:nth-child(1) { transform: rotateY(0deg) translateZ(87px); }
+        .face:nth-child(2) { transform: rotateY(60deg) translateZ(87px); }
+        .face:nth-child(3) { transform: rotateY(120deg) translateZ(87px); }
+        .face:nth-child(4) { transform: rotateY(180deg) translateZ(87px); }
+        .face:nth-child(5) { transform: rotateY(240deg) translateZ(87px); }
+        .face:nth-child(6) { transform: rotateY(300deg) translateZ(87px); }
 
         .face::before {
             content: "";
@@ -186,17 +189,17 @@
             writing-mode: vertical-rl;
             color: #8b7d6b;
             font-weight: bold;
-            font-size: 1.1rem;
-            letter-spacing: 6px;
+            font-size: 1.3rem;
+            letter-spacing: 8px;
             text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
         }
 
         .cap {
             position: absolute;
-            width: 136px;
-            height: 136px;
+            width: 174px;
+            height: 174px;
             background: #fff9e6;
-            left: -28px;
+            left: -37px;
             clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
             border: 1px solid #f0e68c;
         }
@@ -356,15 +359,16 @@
         @media (max-width: 480px) {
             h1 { font-size: 1.5rem; }
             .card { padding: 15px; }
-            .hex-box { width: 60px; height: 160px; }
-            .face { width: 60px; height: 160px; }
-            .face:nth-child(1) { transform: rotateY(0deg) translateZ(51px); }
-            .face:nth-child(2) { transform: rotateY(60deg) translateZ(51px); }
-            .face:nth-child(3) { transform: rotateY(120deg) translateZ(51px); }
-            .face:nth-child(4) { transform: rotateY(180deg) translateZ(51px); }
-            .face:nth-child(5) { transform: rotateY(240deg) translateZ(51px); }
-            .face:nth-child(6) { transform: rotateY(300deg) translateZ(51px); }
-            .cap { width: 102px; height: 102px; left: -21px; }
+            .omikuji-box-area { height: 280px; }
+            .hex-box { width: 75px; height: 180px; }
+            .face { width: 75px; height: 180px; }
+            .face:nth-child(1) { transform: rotateY(0deg) translateZ(65px); }
+            .face:nth-child(2) { transform: rotateY(60deg) translateZ(65px); }
+            .face:nth-child(3) { transform: rotateY(120deg) translateZ(65px); }
+            .face:nth-child(4) { transform: rotateY(180deg) translateZ(65px); }
+            .face:nth-child(5) { transform: rotateY(240deg) translateZ(65px); }
+            .face:nth-child(6) { transform: rotateY(300deg) translateZ(65px); }
+            .cap { width: 130px; height: 130px; left: -27.5px; }
         }
     </style>
 </head>
