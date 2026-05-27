@@ -120,8 +120,8 @@
 
         /* 3Dおみくじ箱のエリア */
         .omikuji-box-area {
-            perspective: 1000px;
-            height: 350px;
+            perspective: 1200px;
+            height: 420px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -144,15 +144,15 @@
 
         .hex-box {
             position: relative;
-            width: 100px;
-            height: 240px;
+            width: 120px;
+            height: 300px;
             transform-style: preserve-3d;
         }
 
         .face {
             position: absolute;
-            width: 100px;
-            height: 240px;
+            width: 120px;
+            height: 300px;
             background: linear-gradient(to right, #fdf5e6, #f5deb3, #fdf5e6);
             border: 1px solid #d2b48c;
             display: flex;
@@ -162,13 +162,13 @@
             box-shadow: inset 0 0 15px rgba(0,0,0,0.08);
         }
 
-        /* 各面の設定（60度ずつ回転） */
-        .face:nth-child(1) { transform: rotateY(0deg) translateZ(87px); }
-        .face:nth-child(2) { transform: rotateY(60deg) translateZ(87px); }
-        .face:nth-child(3) { transform: rotateY(120deg) translateZ(87px); }
-        .face:nth-child(4) { transform: rotateY(180deg) translateZ(87px); }
-        .face:nth-child(5) { transform: rotateY(240deg) translateZ(87px); }
-        .face:nth-child(6) { transform: rotateY(300deg) translateZ(87px); }
+        /* 各面の設定（60度ずつ回転、translateZを104pxに拡大） */
+        .face:nth-child(1) { transform: rotateY(0deg) translateZ(104px); }
+        .face:nth-child(2) { transform: rotateY(60deg) translateZ(104px); }
+        .face:nth-child(3) { transform: rotateY(120deg) translateZ(104px); }
+        .face:nth-child(4) { transform: rotateY(180deg) translateZ(104px); }
+        .face:nth-child(5) { transform: rotateY(240deg) translateZ(104px); }
+        .face:nth-child(6) { transform: rotateY(300deg) translateZ(104px); }
 
         .face::before {
             content: "";
@@ -189,17 +189,17 @@
             writing-mode: vertical-rl;
             color: #8b7d6b;
             font-weight: bold;
-            font-size: 1.3rem;
-            letter-spacing: 8px;
+            font-size: 1.5rem;
+            letter-spacing: 10px;
             text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
         }
 
         .cap {
             position: absolute;
-            width: 174px;
-            height: 174px;
+            width: 208px;
+            height: 208px;
             background: #fff9e6;
-            left: -37px;
+            left: -44px;
             clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
             border: 1px solid #f0e68c;
         }
@@ -359,16 +359,16 @@
         @media (max-width: 480px) {
             h1 { font-size: 1.5rem; }
             .card { padding: 15px; }
-            .omikuji-box-area { height: 280px; }
-            .hex-box { width: 75px; height: 180px; }
-            .face { width: 75px; height: 180px; }
-            .face:nth-child(1) { transform: rotateY(0deg) translateZ(65px); }
-            .face:nth-child(2) { transform: rotateY(60deg) translateZ(65px); }
-            .face:nth-child(3) { transform: rotateY(120deg) translateZ(65px); }
-            .face:nth-child(4) { transform: rotateY(180deg) translateZ(65px); }
-            .face:nth-child(5) { transform: rotateY(240deg) translateZ(65px); }
-            .face:nth-child(6) { transform: rotateY(300deg) translateZ(65px); }
-            .cap { width: 130px; height: 130px; left: -27.5px; }
+            .omikuji-box-area { height: 320px; }
+            .hex-box { width: 90px; height: 220px; }
+            .face { width: 90px; height: 220px; }
+            .face:nth-child(1) { transform: rotateY(0deg) translateZ(78px); }
+            .face:nth-child(2) { transform: rotateY(60deg) translateZ(78px); }
+            .face:nth-child(3) { transform: rotateY(120deg) translateZ(78px); }
+            .face:nth-child(4) { transform: rotateY(180deg) translateZ(78px); }
+            .face:nth-child(5) { transform: rotateY(240deg) translateZ(78px); }
+            .face:nth-child(6) { transform: rotateY(300deg) translateZ(78px); }
+            .cap { width: 156px; height: 156px; left: -33px; }
         }
     </style>
 </head>
@@ -553,7 +553,9 @@
             omikujiBox.classList.add('shaking');
             setTimeout(() => {
                 omikujiBox.classList.remove('shaking');
-                if (shakeCount === requiredShakes) showResult();
+                if (shakeCount === requiredShakes) {
+                    showResult();
+                }
             }, 500);
         }
 
