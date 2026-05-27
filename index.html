@@ -113,9 +113,47 @@
         }
 
         .omikuji-box-area {
-            font-size: 4rem;
-            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 10px;
             transition: transform 0.5s ease;
+        }
+
+        /* 木の箱のスタイル */
+        .wooden-box {
+            position: relative;
+            width: 120px;
+            height: 180px;
+            background: linear-gradient(135deg, #a67c52 0%, #8b5a2b 100%);
+            border: 4px solid #5d3a1a;
+            border-radius: 8px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2), 5px 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wooden-box::before {
+            content: "御神籤";
+            writing-mode: vertical-rl;
+            color: #3d2610;
+            font-weight: bold;
+            font-size: 1.2rem;
+            letter-spacing: 8px;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.1);
+        }
+
+        /* 箱の上下の装飾 */
+        .wooden-box::after {
+            content: "";
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #5d3a1a;
+            box-shadow: 0 152px 0 #5d3a1a;
         }
 
         .fortune-results-list {
@@ -252,7 +290,9 @@
         </section>
 
         <section class="card">
-            <div id="omikujiBox" class="omikuji-box-area">🗳️</div>
+            <div id="omikujiBox" class="omikuji-box-area">
+                <div class="wooden-box"></div>
+            </div>
             
             <!-- 強運表示（結果が出たら表示） -->
             <div id="strongLuckCard" class="strong-luck-card">
