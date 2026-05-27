@@ -355,13 +355,19 @@
                         line = line.trim();
                         if (!line) continue;
                         
+                        // JSON解析が失敗しやすいので、'S'という文字が含まれていたらシェイクとみなす
+                        if (line.includes('S') || line.includes('s')) {
+                            simulateShake();
+                        }
+                        
+                        // JSONも念のため残しておく
                         try {
                             const data = JSON.parse(line);
                             if (data.shake === 1) {
-                                simulateShake(); // シェイク処理を実行
+                                simulateShake();
                             }
                         } catch (e) {
-                            console.warn("JSON解析失敗:", line);
+                            // 解析失敗は無視
                         }
                     }
                 }
