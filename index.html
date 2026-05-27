@@ -589,9 +589,9 @@
             fortuneResultsList.style.display = 'flex';
             shakeInstruction.textContent = '今日のおみくじ完了！';
 
-            // 結果表示エリアへ自動スクロール
+            // 画面の一番下まで自動スクロール
             setTimeout(() => {
-                strongLuckCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             }, 300);
 
             addHistory(bestLuck.name, bestLuck.stars);
