@@ -501,6 +501,7 @@
                 await port.open({ baudRate: 115200 });
                 connectionStatus.textContent = 'micro:bit 接続済み';
                 connectionStatus.style.backgroundColor = '#d4edda';
+                shakeBtn.classList.add('connected-fade');
                 readLoop();
             } catch (error) {
                 console.error(error);
