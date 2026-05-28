@@ -594,13 +594,13 @@
                 window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             }, 300);
 
-            addHistory(bestLuck.name, bestLuck.stars);
+            addHistory(bestLuck.name, bestLuck.stars, bestLuck.message);
         }
 
-        function addHistory(luckName, stars) {
+        function addHistory(luckName, stars, message) {
             const now = new Date();
             const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-            const historyData = { time: timeStr, name: luckName, stars: stars };
+            const historyData = { time: timeStr, name: luckName, stars: stars, message: message };
             const currentHistory = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             currentHistory.unshift(historyData);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(currentHistory));
@@ -613,9 +613,12 @@
                 return;
             }
             historyList.innerHTML = currentHistory.map(item => `
-                <li class="history-item">
-                    <span>${item.time} - ${item.name}</span>
-                    <span>星${item.stars}つ！</span>
+                <li class="history-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                    <div style="width: 100%; display: flex; justify-content: space-between; font-weight: bold;">
+                        <span>${item.time} - ${item.name}</span>
+                        <span>星${item.stars}つ！</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: #666;">${item.message || ''}</div>
                 </li>
             `).join('');
         }
